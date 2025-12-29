@@ -6,6 +6,12 @@
     <title>Flash Cards DEZOR - Запоминание слов</title>
 
     <!-- PWA мета-теги -->
+    <meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self' https:; 
+               script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; 
+               style-src 'self' 'unsafe-inline' https:;
+               img-src 'self' data: https:;
+               connect-src 'self' https:;">
     <meta name="application-name" content="Flash Cards DEZOR" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
@@ -1576,7 +1582,7 @@
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', () => {
             navigator.serviceWorker
-              .register('service-worker.js')
+              .register('/flashcards-dezor/service-worker.js')
               .then((registration) => {
                 console.log(
                   'ServiceWorker зарегистрирован:',
@@ -1639,3 +1645,4 @@
     </script>
   </body>
 </html>
+
