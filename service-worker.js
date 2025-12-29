@@ -1,10 +1,13 @@
 const CACHE_NAME = 'flashcards-v1.0';
+const BASE_PATH = '/flashcards-dezor/'
+
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'service-worker.js',
+  BASE_PATH + 'icon-192.png',
+  BASE_PATH + 'icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -36,3 +39,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
