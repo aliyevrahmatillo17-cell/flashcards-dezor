@@ -1,8 +1,8 @@
 {
-  "name": "Flash Cards DEZOR",
+  "name": "Flashcards",
   "short_name": "FlashCards",
   "description": "Интерактивные карточки для запоминания слов на 3 языках",
-  "start_url": "/",
+   "start_url": "/flashcards-dezor/",
   "display": "standalone",
   "background_color": "#1a2a6c",
   "theme_color": "#4a90e2",
@@ -10,16 +10,17 @@
   "categories": ["education", "productivity"],
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/flashcards-dezor/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/flashcards-dezor/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ]
 }
+
