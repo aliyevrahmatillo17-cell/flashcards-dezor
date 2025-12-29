@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flash Cards DEZOR - Запоминание слов</title>
+
+    <!-- PWA мета-теги -->
+    <meta name="application-name" content="Flash Cards DEZOR" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="FlashCards" />
+    <meta
+      name="description"
+      content="Интерактивные карточки для запоминания слов на 3 языках"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#1a2a6c" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="theme-color" content="#4a90e2" />
+
+    <!-- Open Graph для Telegram/Facebook -->
+    <meta property="og:title" content="Flash Cards DEZOR" />
+    <meta
+      property="og:description"
+      content="Интерактивные карточки для запоминания слов. 3 языка, темная тема, автосохранение."
+    />
+    <meta property="og:image" content="icon-512.png" />
+    <meta property="og:url" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Flash Cards DEZOR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Flash Cards DEZOR" />
+    <meta
+      name="twitter:description"
+      content="Интерактивные карточки для запоминания слов"
+    />
+    <meta name="twitter:image" content="icon-512.png" />
+
+    <!-- Иконки -->
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="icon-152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="icon-167.png" />
+
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+        color: #333;
+        min-height: 100vh;
+        overflow-x: hidden;
+        transition: background 1s ease;
+      }
+
+      body.dark-mode {
+        background: linear-gradient(135deg, #0c1b33, #2d1b69, #1a535c);
+      }
+
+      /* Заставка */
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        transition: opacity 1s ease, visibility 1s ease;
+      }
+
+      .splash-content {
+        text-align: center;
+        padding: 20px;
+        max-width: 800px;
+      }
+
+      .title {
+        font-size: 4.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+        animation: glow 2s infinite alternate, float 3s ease-in-out infinite;
+      }
+
+      @keyframes glow {
+        from {
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+            0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        to {
+          text-shadow: 0 0 20px rgba(255, 255, 255, 0.9),
+            0 0 30px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+
+      .subtitle {
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 50px;
+        animation: fadeIn 2s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .language-selection {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 25px;
+        margin-top: 40px;
+        animation: slideUp 1.5s ease-in-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .language-btn {
+        padding: 20px 40px;
+        font-size: 1.4rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        backdrop-filter: blur(10px);
+        min-width: 200px;
+      }
+
+      .language-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-10px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Основной интерфейс */
+      .app-container {
+        display: none;
+        opacity: 0;
+        transition: opacity 1s ease;
+      }
+
+      .app-container.show {
+        display: block;
+        opacity: 1;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+        min-height: 100vh;
+      }
+
+      /* Кнопка установки PWA */
+      #install-btn {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+      }
+
+      #install-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Кнопка темы */
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .theme-toggle:hover {
+        transform: rotate(30deg) scale(1.1);
+        background: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Подпись автора */
+      .author-signature {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem;
+        font-style: italic;
+        z-index: 100;
+        padding: 10px 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+      }
+
+      .author-signature:hover {
+        color: rgba(255, 255, 255, 0.9);
+        background: rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px);
+      }
+
+      .author-name {
+        color: #ffd700;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      }
+
+      /* Хедер */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        position: relative;
+      }
+
+      body.dark-mode header {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .app-title {
+        font-size: 2.5rem;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .language-switcher {
+        display: flex;
+        gap: 15px;
+      }
+
+      .lang-btn {
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .lang-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .lang-btn.active {
+        background: rgba(255, 255, 255, 0.3);
+        font-weight: bold;
+      }
+
+      /* Управление */
+      .controls {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      body.dark-mode .controls {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .input-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+        align-items: center;
+      }
+
+      input {
+        padding: 15px 25px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        font-size: 1.1rem;
+        flex: 1;
+        min-width: 200px;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s;
+        color: #333;
+      }
+
+      body.dark-mode input {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(100, 100, 255, 0.3);
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+      }
+
+      button {
+        padding: 15px 30px;
+        background: linear-gradient(to right, #4a90e2, #63b3ed);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      body.dark-mode button {
+        background: linear-gradient(to right, #5a5aff, #8a8aff);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+      }
+
+      button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      body.dark-mode button:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 25px;
+      }
+
+      .navigation-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 20px;
+      }
+
+      .nav-btn {
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        background: linear-gradient(to right, #ff7e5f, #feb47b);
+        border-radius: 50px;
+        min-width: 200px;
+      }
+
+      body.dark-mode .nav-btn {
+        background: linear-gradient(to right, #ff6b6b, #ffa8a8);
+      }
+
+      .nav-btn.prev {
+        background: linear-gradient(to right, #4caf50, #8bc34a);
+      }
+
+      body.dark-mode .nav-btn.prev {
+        background: linear-gradient(to right, #55cc55, #88dd88);
+      }
+
+      /* Карточки */
+      .cards-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 500px;
+        margin-bottom: 40px;
+        position: relative;
+        perspective: 1200px;
+      }
+
+      .cards-carousel {
+        position: relative;
+        width: 300px;
+        height: 400px;
+      }
+
+      .card {
+        position: absolute;
+        width: 300px;
+        height: 400px;
+        border-radius: 20px;
+        transform-style: preserve-3d;
+        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+      }
+
+      body.dark-mode .card {
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      }
+
+      .card.flipped {
+        transform: rotateY(180deg);
+      }
+
+      .card-front,
+      .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        backface-visibility: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 30px;
+        overflow: hidden;
+        text-align: center;
+      }
+
+      .card-front {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        color: #333;
+      }
+
+      body.dark-mode .card-front {
+        background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+        color: #f0f0f0;
+      }
+
+      .card-back {
+        background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+        color: #333;
+        transform: rotateY(180deg);
+      }
+
+      body.dark-mode .card-back {
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+        color: #f0f0f0;
+      }
+
+      .word {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        word-break: break-word;
+      }
+
+      .translation {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        word-break: break-word;
+      }
+
+      .card-number {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        font-size: 1.2rem;
+        color: rgba(0, 0, 0, 0.5);
+        font-weight: bold;
+      }
+
+      body.dark-mode .card-number {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .counter {
+        color: white;
+        font-size: 1.3rem;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 15px;
+        backdrop-filter: blur(5px);
+      }
+
+      body.dark-mode .counter {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* Инструкции */
+      .instructions {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        color: white;
+        line-height: 1.8;
+      }
+
+      body.dark-mode .instructions {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .instructions h2 {
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        color: #ffd700;
+      }
+
+      body.dark-mode .instructions h2 {
+        color: #4fc3f7;
+      }
+
+      .instructions ul {
+        padding-left: 25px;
+        margin-bottom: 20px;
+      }
+
+      .instructions li {
+        margin-bottom: 10px;
+      }
+
+      .empty-state {
+        text-align: center;
+        color: white;
+        font-size: 1.5rem;
+        padding: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+      }
+
+      body.dark-mode .empty-state {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* QR-код секция */
+      .qr-section {
+        text-align: center;
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+      }
+
+      .qr-section h3 {
+        color: #ffd700;
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+      }
+
+      #qrcode img {
+        width: 200px;
+        height: 200px;
+        border-radius: 10px;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        padding: 10px;
+        background: white;
+      }
+
+      .qr-section p {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      /* Частицы */
+      .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float-particle 20s infinite linear;
+      }
+
+      @keyframes float-particle {
+        0% {
+          transform: translateY(100vh) translateX(0) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 0.3;
+        }
+        90% {
+          opacity: 0.3;
+        }
+        100% {
+          transform: translateY(-100px) translateX(100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* Уведомления */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        z-index: 10000;
+        animation: fadeInOut 3s;
+      }
+
+      @keyframes fadeInOut {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, 20px);
+        }
+        15% {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+        85% {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -20px);
+        }
+      }
+
+      /* Адаптивность */
+      @media (max-width: 768px) {
+        .title {
+          font-size: 3rem;
+        }
+
+        .language-btn {
+          padding: 15px 25px;
+          font-size: 1.2rem;
+          min-width: 150px;
+        }
+
+        .app-title {
+          font-size: 1.8rem;
+        }
+
+        .input-section {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        input {
+          width: 100%;
+        }
+
+        .cards-carousel {
+          width: 250px;
+          height: 350px;
+        }
+
+        .card {
+          width: 250px;
+          height: 350px;
+        }
+
+        .word,
+        .translation {
+          font-size: 2rem;
+        }
+
+        .navigation-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .theme-toggle {
+          width: 50px;
+          height: 50px;
+          font-size: 1.5rem;
+        }
+
+        .author-signature {
+          font-size: 0.9rem;
+          padding: 8px 15px;
+        }
+
+        #install-btn {
+          bottom: 70px;
+          right: 10px;
+          padding: 10px 15px;
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .title {
+          font-size: 2.5rem;
+        }
+
+        .subtitle {
+          font-size: 1.2rem;
+        }
+
+        .cards-carousel {
+          width: 220px;
+          height: 320px;
+        }
+
+        .card {
+          width: 220px;
+          height: 320px;
+        }
+
+        .word,
+        .translation {
+          font-size: 1.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Частицы на фоне -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Заставка с выбором языка -->
+    <div id="splash-screen">
+      <div class="splash-content">
+        <h1 class="title">Flash Cards</h1>
+        <p class="subtitle" id="splash-subtitle">
+          Интерактивные карточки для запоминания слов
+        </p>
+
+        <div class="language-selection">
+          <button class="language-btn" id="lang-uz">O'zbek tili</button>
+          <button class="language-btn" id="lang-ru">Русский язык</button>
+          <button class="language-btn" id="lang-en">English language</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Основное приложение -->
+    <div class="app-container" id="app-container">
+      <!-- Кнопка темы -->
+      <button class="theme-toggle" id="theme-toggle" title="Переключить тему">
+        🌙
+      </button>
+
+      <!-- Кнопка установки (появится позже) -->
+
+      <!-- Подпись автора -->
+      <div class="author-signature">
+        Created by: <span class="author-name">DEZOR</span>
+      </div>
+
+      <div class="container">
+        <header>
+          <h1 class="app-title" id="app-title">Flash Cards</h1>
+          <div class="language-switcher">
+            <button class="lang-btn" id="switch-uz">UZ</button>
+            <button class="lang-btn active" id="switch-ru">RU</button>
+            <button class="lang-btn" id="switch-en">EN</button>
+          </div>
+        </header>
+
+        <div class="controls">
+          <div class="input-section">
+            <input type="text" id="word-input" placeholder="Введите слово" />
+            <input
+              type="text"
+              id="translation-input"
+              placeholder="Введите перевод"
+            />
+            <button id="add-card-btn">Добавить карточку</button>
+          </div>
+
+          <div class="action-buttons">
+            <button id="shuffle-btn">Перемешать карточки</button>
+            <button id="flip-all-btn">Перевернуть все карточки</button>
+            <button id="share-btn">📤 Поделиться приложением</button>
+            <button id="reset-btn">Очистить все карточки</button>
+          </div>
+
+          <div class="navigation-buttons">
+            <button class="nav-btn prev" id="prev-btn">
+              Предыдущая карточка
+            </button>
+            <button class="nav-btn" id="next-btn">Следующая карточка</button>
+          </div>
+        </div>
+
+        <div class="counter">
+          <span id="counter-text">Карточек: 0 | Текущая: 0</span>
+        </div>
+
+        <div class="cards-container">
+          <div class="cards-carousel" id="cards-carousel">
+            <!-- Карточки будут добавляться сюда -->
+            <div class="empty-state" id="empty-state">
+              <p>Добавьте первую карточку, чтобы начать обучение!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="instructions">
+          <h2 id="instructions-title">Как пользоваться:</h2>
+          <ul id="instructions-list">
+            <li>
+              Введите слово и его перевод в соответствующие поля и нажмите
+              "Добавить карточку"
+            </li>
+            <li>Нажмите на карточку, чтобы перевернуть ее и увидеть перевод</li>
+            <li>
+              Используйте кнопки "Следующая карточка" и "Предыдущая карточка"
+              для навигации
+            </li>
+            <li>Кнопка "Перемешать карточки" изменяет порядок карточек</li>
+            <li>
+              Кнопка "Перевернуть все карточки" показывает/скрывает переводы на
+              всех карточках
+            </li>
+            <li>
+              Карточки располагаются одна за другой - текущая карточка спереди,
+              остальные сзади
+            </li>
+            <li>
+              Используйте кнопку 🌙 в правом верхнем углу для переключения темы
+            </li>
+            <li><strong>Ваши карточки сохраняются автоматически!</strong></li>
+          </ul>
+          <p id="instructions-footer">
+            Создавайте карточки для запоминания слов и улучшайте свой словарный
+            запас!
+          </p>
+
+          <!-- QR-код секция -->
+          <div class="qr-section">
+            <h3>Быстрый доступ через QR-код</h3>
+            <div id="qrcode"></div>
+            <p>Отсканируйте QR-код камерой телефона</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Переводы на 3 языка
+        const translations = {
+          uz: {
+            splashSubtitle: "So'zlarni yodlash uchun interaktiv kartochkalar",
+            appTitle: 'Flash Kartochkalar',
+            wordPlaceholder: "So'z kiriting",
+            translationPlaceholder: 'Tarjimasini kiriting',
+            addCard: "Kartochka qo'shish",
+            shuffle: 'Kartochkalarni aralashtirish',
+            flipAll: 'Barcha kartochkalarni aylantirish',
+            shareBtn: '📤 Ilovani ulashish',
+            reset: 'Barcha kartochkalarni tozalash',
+            prev: 'Oldingi kartochka',
+            next: 'Keyingi kartochka',
+            counter: 'Kartochkalar: {total} | Joriy: {current}',
+            emptyState:
+              "O'qishni boshlash uchun birinchi kartochkani qo'shing!",
+            instructionsTitle: 'Qanday foydalanish:',
+            instructions: [
+              "So'z va uning tarjimasini tegishli maydonlarga kiriting va 'Kartochka qo'shish' tugmasini bosing",
+              "Tarjimani ko'rish uchun kartochkani aylantirish uchun unga bosing",
+              "Navigatsiya uchun 'Keyingi kartochka' va 'Oldingi kartochka' tugmalaridan foydalaning",
+              "'Kartochkalarni aralashtirish' tugmasi kartochkalar tartibini o'zgartiradi",
+              "'Barcha kartochkalarni aylantirish' tugmasi barcha kartochkalardagi tarjimalarni ko'rsatadi/yashiradi",
+              'Kartochkalar bir-birining orqasida joylashgan - joriy kartochka oldinda, qolganlari orqada',
+              "Mavzuni o'zgartirish uchun yuqori o'ng burchakdagi 🌙 tugmasidan foydalaning",
+              '<strong>Sizning kartochkalaringiz avtomatik saqlanadi!</strong>',
+            ],
+            instructionsFooter:
+              "So'zlarni yodlash uchun kartochkalar yarating va lug'atingizni boyiting!",
+            themeToggle: "Mavzuni o'zgartirish",
+            installBtn: "📲 Ilovani o'rnatish",
+            shareText:
+              "Bu so'zlarni yodlash uchun ajoyib ilova! 3 ta tilni qo'llab-quvvatlaydi, qorong'u mavzu va kartochkalarni saqlaydi 📚",
+            toastInstalled: "Ilova o'rnatildi! 🎉",
+            toastCopied:
+              "Havola buferga nusxalandi! 📋\nTelegramda do'stingizga yuboring",
+            qrText: 'Telefon kamerasi bilan QR-kodni skanerlang',
+          },
+          ru: {
+            splashSubtitle: 'Интерактивные карточки для запоминания слов',
+            appTitle: 'Flash Cards',
+            wordPlaceholder: 'Введите слово',
+            translationPlaceholder: 'Введите перевод',
+            addCard: 'Добавить карточку',
+            shuffle: 'Перемешать карточки',
+            flipAll: 'Перевернуть все карточки',
+            shareBtn: '📤 Поделиться приложением',
+            reset: 'Очистить все карточки',
+            prev: 'Предыдущая карточка',
+            next: 'Следующая карточка',
+            counter: 'Карточек: {total} | Текущая: {current}',
+            emptyState: 'Добавьте первую карточку, чтобы начать обучение!',
+            instructionsTitle: 'Как пользоваться:',
+            instructions: [
+              "Введите слово и его перевод в соответствующие поля и нажмите 'Добавить карточку'",
+              'Нажмите на карточку, чтобы перевернуть ее и увидеть перевод',
+              "Используйте кнопки 'Следующая карточка' и 'Предыдущая карточка' для навигации",
+              "Кнопка 'Перемешать карточки' изменяет порядок карточек",
+              "Кнопка 'Перевернуть все карточки' показывает/скрывает переводы на всех карточках",
+              'Карточки располагаются одна за другой - текущая карточка спереди, остальные сзади',
+              'Используйте кнопку 🌙 в правом верхнем углу для переключения темы',
+              '<strong>Ваши карточки сохраняются автоматически!</strong>',
+            ],
+            instructionsFooter:
+              'Создавайте карточки для запоминания слов и улучшайте свой словарный запас!',
+            themeToggle: 'Переключить тему',
+            installBtn: '📲 Установить приложение',
+            shareText:
+              'Попробуй это крутое приложение для запоминания слов! Поддерживает 3 языка, темную тему и сохраняет карточки 📚',
+            toastInstalled: 'Приложение установлено! 🎉',
+            toastCopied:
+              'Ссылка скопирована в буфер обмена! 📋\nОтправь ее другу в Telegram',
+            qrText: 'Отсканируйте QR-код камерой телефона',
+          },
+          en: {
+            splashSubtitle: 'Interactive flashcards for word memorization',
+            appTitle: 'Flash Cards',
+            wordPlaceholder: 'Enter word',
+            translationPlaceholder: 'Enter translation',
+            addCard: 'Add card',
+            shuffle: 'Shuffle cards',
+            flipAll: 'Flip all cards',
+            shareBtn: '📤 Share app',
+            reset: 'Clear all cards',
+            prev: 'Previous card',
+            next: 'Next card',
+            counter: 'Cards: {total} | Current: {current}',
+            emptyState: 'Add your first card to start learning!',
+            instructionsTitle: 'How to use:',
+            instructions: [
+              "Enter a word and its translation in the corresponding fields and click 'Add card'",
+              'Click on a card to flip it and see the translation',
+              "Use the 'Next card' and 'Previous card' buttons for navigation",
+              "The 'Shuffle cards' button changes the order of the cards",
+              "The 'Flip all cards' button shows/hides translations on all cards",
+              'The cards are arranged one behind the other - the current card is in front, the rest are behind',
+              'Use the 🌙 button in the top right corner to switch themes',
+              '<strong>Your cards are saved automatically!</strong>',
+            ],
+            instructionsFooter:
+              'Create flashcards to memorize words and improve your vocabulary!',
+            themeToggle: 'Toggle theme',
+            installBtn: '📲 Install app',
+            shareText:
+              'Try this awesome app for memorizing words! Supports 3 languages, dark theme and saves cards 📚',
+            toastInstalled: 'App installed! 🎉',
+            toastCopied:
+              'Link copied to clipboard! 📋\nSend it to a friend on Telegram',
+            qrText: 'Scan QR code with phone camera',
+          },
+        };
+
+        // Переменные приложения
+        let currentLang = 'ru';
+        let cards = [];
+        let currentCardIndex = 0;
+        let isFlippedAll = false;
+        let isDarkMode = false;
+        let deferredPrompt = null;
+
+        // Элементы DOM
+        const splashScreen = document.getElementById('splash-screen');
+        const appContainer = document.getElementById('app-container');
+        const splashSubtitle = document.getElementById('splash-subtitle');
+        const cardsCarousel = document.getElementById('cards-carousel');
+        const emptyState = document.getElementById('empty-state');
+        const counterText = document.getElementById('counter-text');
+        const themeToggle = document.getElementById('theme-toggle');
+        const particlesContainer = document.getElementById('particles');
+        const shareBtn = document.getElementById('share-btn');
+        const qrCodeContainer = document.getElementById('qrcode');
+
+        // Элементы для перевода
+        const elementsToTranslate = {
+          appTitle: document.getElementById('app-title'),
+          wordInput: document.getElementById('word-input'),
+          translationInput: document.getElementById('translation-input'),
+          addCardBtn: document.getElementById('add-card-btn'),
+          shuffleBtn: document.getElementById('shuffle-btn'),
+          flipAllBtn: document.getElementById('flip-all-btn'),
+          shareBtn: document.getElementById('share-btn'),
+          resetBtn: document.getElementById('reset-btn'),
+          prevBtn: document.getElementById('prev-btn'),
+          nextBtn: document.getElementById('next-btn'),
+          instructionsTitle: document.getElementById('instructions-title'),
+          instructionsList: document.getElementById('instructions-list'),
+          instructionsFooter: document.getElementById('instructions-footer'),
+          emptyState: document.getElementById('empty-state'),
+        };
+
+        // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
+
+        // Применение языка
+        function applyLanguage(lang) {
+          currentLang = lang;
+          const t = translations[lang];
+
+          // Обновляем тексты
+          splashSubtitle.textContent = t.splashSubtitle;
+          elementsToTranslate.appTitle.textContent = t.appTitle;
+          elementsToTranslate.wordInput.placeholder = t.wordPlaceholder;
+          elementsToTranslate.translationInput.placeholder =
+            t.translationPlaceholder;
+          elementsToTranslate.addCardBtn.textContent = t.addCard;
+          elementsToTranslate.shuffleBtn.textContent = t.shuffle;
+          elementsToTranslate.flipAllBtn.textContent = t.flipAll;
+          elementsToTranslate.shareBtn.textContent = t.shareBtn;
+          elementsToTranslate.resetBtn.textContent = t.reset;
+          elementsToTranslate.prevBtn.textContent = t.prev;
+          elementsToTranslate.nextBtn.textContent = t.next;
+          elementsToTranslate.emptyState.textContent = t.emptyState;
+          elementsToTranslate.instructionsTitle.textContent =
+            t.instructionsTitle;
+          elementsToTranslate.instructionsFooter.textContent =
+            t.instructionsFooter;
+          themeToggle.title = t.themeToggle;
+
+          // Обновляем инструкции
+          elementsToTranslate.instructionsList.innerHTML = '';
+          t.instructions.forEach((instruction) => {
+            const li = document.createElement('li');
+            li.innerHTML = instruction;
+            elementsToTranslate.instructionsList.appendChild(li);
+          });
+
+          // Обновляем кнопки языка
+          document.querySelectorAll('.lang-btn').forEach((btn) => {
+            btn.classList.remove('active');
+          });
+          document.getElementById(`switch-${lang}`).classList.add('active');
+
+          // Обновляем QR текст
+          if (
+            qrCodeContainer.nextElementSibling &&
+            qrCodeContainer.nextElementSibling.tagName === 'P'
+          ) {
+            qrCodeContainer.nextElementSibling.textContent = t.qrText;
+          }
+
+          updateCounter();
+        }
+
+        // Сохранение в localStorage
+        function saveCardsToStorage() {
+          const cardsData = cards.map((card) => ({
+            word: card.word,
+            translation: card.translation,
+          }));
+          localStorage.setItem('flashcards-data', JSON.stringify(cardsData));
+          localStorage.setItem('flashcards-language', currentLang);
+          localStorage.setItem(
+            'flashcards-theme',
+            isDarkMode ? 'dark' : 'light'
+          );
+          localStorage.setItem('flashcards-current-index', currentCardIndex);
+        }
+
+        // Загрузка из localStorage
+        function loadCardsFromStorage() {
+          try {
+            const savedData = localStorage.getItem('flashcards-data');
+            const savedLang = localStorage.getItem('flashcards-language');
+            const savedTheme = localStorage.getItem('flashcards-theme');
+            const savedIndex = localStorage.getItem('flashcards-current-index');
+
+            if (savedLang) {
+              currentLang = savedLang;
+              applyLanguage(currentLang);
+            }
+
+            if (savedTheme === 'dark') {
+              isDarkMode = true;
+              document.body.classList.add('dark-mode');
+              themeToggle.textContent = '☀️';
+            }
+
+            if (savedData) {
+              const cardsData = JSON.parse(savedData);
+              if (cardsData.length > 0) {
+                cardsData.forEach((cardData) => {
+                  createCard(cardData.word, cardData.translation);
+                });
+              }
+            }
+
+            if (savedIndex && cards.length > 0) {
+              currentCardIndex = Math.min(
+                parseInt(savedIndex),
+                cards.length - 1
+              );
+              updateCardsVisibility();
+            }
+          } catch (error) {
+            console.error('Error loading from storage:', error);
+          }
+        }
+
+        // Создание частиц
+        function createParticles() {
+          particlesContainer.innerHTML = '';
+          const particleCount = isDarkMode ? 30 : 20;
+
+          for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+
+            const size = Math.random() * (isDarkMode ? 10 : 8) + 2;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${Math.random() * 100}vw`;
+            particle.style.animationDelay = `${Math.random() * 20}s`;
+
+            const duration = 15 + Math.random() * 20;
+            particle.style.animationDuration = `${duration}s`;
+
+            if (isDarkMode) {
+              particle.style.background = `rgba(100, 200, 255, ${
+                0.1 + Math.random() * 0.2
+              })`;
+            } else {
+              particle.style.background = `rgba(255, 255, 255, ${
+                0.1 + Math.random() * 0.3
+              })`;
+            }
+
+            particlesContainer.appendChild(particle);
+          }
+        }
+
+        // Переключение темы
+        function toggleTheme() {
+          isDarkMode = !isDarkMode;
+          document.body.classList.toggle('dark-mode', isDarkMode);
+          themeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+          createParticles();
+          saveCardsToStorage();
+        }
+
+        // Обновление счетчика
+        function updateCounter() {
+          const t = translations[currentLang];
+          counterText.textContent = t.counter
+            .replace('{total}', cards.length)
+            .replace('{current}', cards.length > 0 ? currentCardIndex + 1 : 0);
+        }
+
+        // Обновление пустого состояния
+        function updateEmptyState() {
+          if (cards.length === 0) {
+            emptyState.style.display = 'block';
+          } else {
+            emptyState.style.display = 'none';
+          }
+        }
+
+        // Создание карточки
+        function createCard(word, translation) {
+          const cardId = `card-${cards.length}`;
+          const cardIndex = cards.length;
+
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.id = cardId;
+          card.dataset.index = cardIndex;
+
+          card.innerHTML = `
+                    <div class="card-front">
+                        <div class="word">${word}</div>
+                        <div class="card-number">${cardIndex + 1}</div>
+                    </div>
+                    <div class="card-back">
+                        <div class="translation">${translation}</div>
+                        <div class="card-number">${cardIndex + 1}</div>
+                    </div>
+                `;
+
+          cardsCarousel.appendChild(card);
+          cards.push({ word, translation, element: card });
+
+          updateCardsVisibility();
+
+          card.addEventListener('click', function () {
+            this.classList.toggle('flipped');
+            saveCardsToStorage();
+          });
+
+          updateCounter();
+          updateEmptyState();
+          saveCardsToStorage();
+
+          return card;
+        }
+
+        // Обновление видимости карточек
+        function updateCardsVisibility() {
+          cards.forEach((card, index) => {
+            const element = card.element;
+
+            if (index === currentCardIndex) {
+              element.style.zIndex = '100';
+              element.style.transform = 'translateX(0) rotateY(0deg)';
+              element.style.opacity = '1';
+            } else {
+              const offset = (index - currentCardIndex) * 30;
+              const zIndex = 90 - Math.abs(index - currentCardIndex);
+              const opacity = 1 - Math.abs(index - currentCardIndex) * 0.3;
+
+              element.style.zIndex = Math.max(zIndex, 1);
+              element.style.transform = `translateX(${offset}px) rotateY(0deg)`;
+              element.style.opacity = Math.max(opacity, 0.1);
+
+              if (!isFlippedAll) {
+                element.classList.remove('flipped');
+              }
+            }
+          });
+          saveCardsToStorage();
+        }
+
+        // Следующая карточка
+        function nextCard() {
+          if (cards.length === 0) return;
+          currentCardIndex = (currentCardIndex + 1) % cards.length;
+          updateCardsVisibility();
+          updateCounter();
+        }
+
+        // Предыдущая карточка
+        function prevCard() {
+          if (cards.length === 0) return;
+          currentCardIndex =
+            (currentCardIndex - 1 + cards.length) % cards.length;
+          updateCardsVisibility();
+          updateCounter();
+        }
+
+        // Перемешать карточки
+        function shuffleCards() {
+          if (cards.length < 2) return;
+
+          for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+          }
+
+          cardsCarousel.innerHTML = '';
+          cards.forEach((card, index) => {
+            card.element.dataset.index = index;
+            cardsCarousel.appendChild(card.element);
+          });
+
+          currentCardIndex = 0;
+          updateCardsVisibility();
+          updateCounter();
+
+          if (isFlippedAll) {
+            flipAllCards();
+          }
+
+          saveCardsToStorage();
+        }
+
+        // Перевернуть все карточки
+        function flipAllCards() {
+          if (cards.length === 0) return;
+          isFlippedAll = !isFlippedAll;
+          cards.forEach((card) => {
+            if (isFlippedAll) {
+              card.element.classList.add('flipped');
+            } else {
+              card.element.classList.remove('flipped');
+            }
+          });
+          saveCardsToStorage();
+        }
+
+        // Очистить все карточки
+        function resetAllCards() {
+          if (cards.length === 0) return;
+
+          const t = translations[currentLang];
+          if (
+            confirm(
+              currentLang === 'ru'
+                ? 'Вы уверены, что хотите удалить все карточки?'
+                : currentLang === 'en'
+                ? 'Are you sure you want to delete all cards?'
+                : "Barcha kartochkalarni o'chirishni xohlaysizmi?"
+            )
+          ) {
+            cards.forEach((card) => card.element.remove());
+            cards = [];
+            currentCardIndex = 0;
+            updateCounter();
+            updateEmptyState();
+            localStorage.removeItem('flashcards-data');
+            localStorage.removeItem('flashcards-current-index');
+          }
+        }
+
+        // ========== PWA ФУНКЦИИ ==========
+
+        // Показать уведомление
+        function showToast(message) {
+          const toast = document.createElement('div');
+          toast.className = 'toast';
+          toast.textContent = message;
+          document.body.appendChild(toast);
+
+          setTimeout(() => {
+            toast.remove();
+          }, 3000);
+        }
+
+        // Показать кнопку установки
+        function showInstallButton() {
+          if (deferredPrompt) {
+            const t = translations[currentLang];
+            const installBtn = document.createElement('button');
+            installBtn.id = 'install-btn';
+            installBtn.textContent = t.installBtn;
+
+            installBtn.onclick = async () => {
+              if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                  installBtn.remove();
+                  showToast(t.toastInstalled);
+                }
+                deferredPrompt = null;
+              }
+            };
+
+            document.body.appendChild(installBtn);
+          }
+        }
+
+        // Поделиться приложением
+        async function shareApp() {
+          const t = translations[currentLang];
+          const shareData = {
+            title: 'Flash Cards DEZOR',
+            text: t.shareText,
+            url: window.location.href,
+          };
+
+          try {
+            if (navigator.share) {
+              await navigator.share(shareData);
+              showToast('Спасибо! 🙏');
+            } else {
+              await navigator.clipboard.writeText(window.location.href);
+              showToast(t.toastCopied);
+
+              // Открыть Telegram
+              const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(
+                window.location.href
+              )}&text=${encodeURIComponent(t.shareText)}`;
+              setTimeout(() => window.open(telegramUrl, '_blank'), 1000);
+            }
+          } catch (error) {
+            console.log('Ошибка:', error);
+            const tempInput = document.createElement('input');
+            tempInput.value = window.location.href;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(t.toastCopied);
+          }
+        }
+
+        // Генерация QR-кода
+        function generateQRCode() {
+          if (!qrCodeContainer) return;
+
+          const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+            window.location.href
+          )}`;
+
+          const img = document.createElement('img');
+          img.src = qrCodeUrl;
+          img.alt = 'QR-код для приложения Flash Cards';
+          img.style.width = '200px';
+          img.style.height = '200px';
+          img.style.borderRadius = '10px';
+          img.style.border = '3px solid rgba(255, 255, 255, 0.2)';
+          img.style.padding = '10px';
+          img.style.background = 'white';
+
+          qrCodeContainer.innerHTML = '';
+          qrCodeContainer.appendChild(img);
+        }
+
+        // ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
+
+        // Заставка
+        document.getElementById('lang-uz').addEventListener('click', () => {
+          applyLanguage('uz');
+          setTimeout(() => {
+            splashScreen.style.opacity = '0';
+            splashScreen.style.visibility = 'hidden';
+            appContainer.classList.add('show');
+          }, 500);
+        });
+
+        document.getElementById('lang-ru').addEventListener('click', () => {
+          applyLanguage('ru');
+          setTimeout(() => {
+            splashScreen.style.opacity = '0';
+            splashScreen.style.visibility = 'hidden';
+            appContainer.classList.add('show');
+          }, 500);
+        });
+
+        document.getElementById('lang-en').addEventListener('click', () => {
+          applyLanguage('en');
+          setTimeout(() => {
+            splashScreen.style.opacity = '0';
+            splashScreen.style.visibility = 'hidden';
+            appContainer.classList.add('show');
+          }, 500);
+        });
+
+        // Переключение языка
+        document
+          .getElementById('switch-uz')
+          .addEventListener('click', () => applyLanguage('uz'));
+        document
+          .getElementById('switch-ru')
+          .addEventListener('click', () => applyLanguage('ru'));
+        document
+          .getElementById('switch-en')
+          .addEventListener('click', () => applyLanguage('en'));
+
+        // Тема
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Основные кнопки
+        elementsToTranslate.addCardBtn.addEventListener('click', () => {
+          const word = elementsToTranslate.wordInput.value.trim();
+          const translation = elementsToTranslate.translationInput.value.trim();
+
+          if (word && translation) {
+            createCard(word, translation);
+            elementsToTranslate.wordInput.value = '';
+            elementsToTranslate.translationInput.value = '';
+            elementsToTranslate.wordInput.focus();
+          } else {
+            alert(
+              currentLang === 'ru'
+                ? 'Пожалуйста, заполните оба поля!'
+                : currentLang === 'en'
+                ? 'Please fill in both fields!'
+                : "Iltimos, ikkala maydonni ham to'ldiring!"
+            );
+          }
+        });
+
+        // Enter для добавления
+        elementsToTranslate.wordInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') elementsToTranslate.translationInput.focus();
+        });
+
+        elementsToTranslate.translationInput.addEventListener(
+          'keypress',
+          (e) => {
+            if (e.key === 'Enter') elementsToTranslate.addCardBtn.click();
+          }
+        );
+
+        // Остальные кнопки
+        elementsToTranslate.shuffleBtn.addEventListener('click', shuffleCards);
+        elementsToTranslate.flipAllBtn.addEventListener('click', flipAllCards);
+        shareBtn.addEventListener('click', shareApp);
+        elementsToTranslate.resetBtn.addEventListener('click', resetAllCards);
+        elementsToTranslate.prevBtn.addEventListener('click', prevCard);
+        elementsToTranslate.nextBtn.addEventListener('click', nextCard);
+
+        // ========== PWA СОБЫТИЯ ==========
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker
+              .register('service-worker.js')
+              .then((registration) => {
+                console.log(
+                  'ServiceWorker зарегистрирован:',
+                  registration.scope
+                );
+              })
+              .catch((error) => {
+                console.log('ServiceWorker ошибка:', error);
+              });
+          });
+        }
+
+        // Установка PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          showInstallButton();
+        });
+
+        // Проверка, установлено ли приложение
+        window.addEventListener('appinstalled', () => {
+          deferredPrompt = null;
+          console.log('Приложение установлено');
+        });
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+
+        // Загрузка сохраненных данных
+        loadCardsFromStorage();
+
+        // Создание частиц
+        createParticles();
+
+        // Генерация QR-кода
+        setTimeout(generateQRCode, 1000);
+
+        // Примеры карточек (если нет сохраненных)
+        setTimeout(() => {
+          if (cards.length === 0) {
+            const examples = [
+              { word: 'Hello', translation: 'Привет' },
+              { word: 'Goodbye', translation: 'До свидания' },
+              { word: 'Thank you', translation: 'Спасибо' },
+              { word: 'Please', translation: 'Пожалуйста' },
+              { word: 'Yes', translation: 'Да' },
+            ];
+
+            examples.forEach((example, index) => {
+              setTimeout(() => {
+                createCard(example.word, example.translation);
+              }, index * 200);
+            });
+          }
+        }, 500);
+
+        // Инициализация интерфейса
+        updateEmptyState();
+        updateCounter();
+      });
+    </script>
+  </body>
+</html>
